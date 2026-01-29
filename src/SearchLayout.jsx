@@ -6,11 +6,15 @@ function SearchLayout() {
 
   // Load all rows on component mount
   useEffect(() => {
+    loadAllRows();
+  }, []);
+
+  // Load all rows from the database
+  const loadAllRows = () => {
     if (!window.db) {
       console.log('Database not ready');
       return;
     }
-
     const sql = `SELECT * FROM food_facilities LIMIT 500`;
     const stmt = window.db.prepare(sql);
 
@@ -22,14 +26,16 @@ function SearchLayout() {
 
     setResults(allResults);
     console.log(`Loaded ${allResults.length} rows`);
-  }, []);
+  };
 
   // Handle search input submit
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // If search input is empty, load all rows again
     if (!searchQuery.trim()) {
-      console.log('Submitted empty search input');
+      console.log('Submitted empty search input, loading all rows again');
+      loadAllRows();
       return;
     }
 
