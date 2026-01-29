@@ -4,6 +4,8 @@ function SearchLayout() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isLatLongSearch, setIsLatLongSearch] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   // Load all rows on component mount
   useEffect(() => {
@@ -16,7 +18,7 @@ function SearchLayout() {
       console.log('Database not ready');
       return;
     }
-    const sql = `SELECT * FROM food_facilities LIMIT 500`;
+    const sql = `SELECT * FROM food_facilities`;
     const stmt = window.db.prepare(sql);
 
     const allResults = [];
@@ -27,6 +29,7 @@ function SearchLayout() {
 
     setResults(allResults);
     setIsLatLongSearch(false);
+    setCurrentPage(1);
     console.log(`Loaded ${allResults.length} rows`);
   };
 
@@ -84,13 +87,13 @@ function SearchLayout() {
 
       setResults(searchResults);
       setIsLatLongSearch(true);
+      setCurrentPage(1);
       console.log(`Found ${searchResults.length} nearest results:`, searchResults);
     } else {
       // Text search on Applicant or Address columns
       const sql = `
         SELECT * FROM food_facilities
         WHERE "Applicant" LIKE ? OR "Address" LIKE ?
-        LIMIT 50
       `;
       const stmt = window.db.prepare(sql);
 
@@ -105,8 +108,72 @@ function SearchLayout() {
 
       setResults(searchResults);
       setIsLatLongSearch(false);
+      setCurrentPage(1);
       console.log(`Found ${searchResults.length} text search results:`, searchResults);
     }
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageResults = isLatLongSearch ? results : results.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
+
+  const handleFirstPage = () => {
+    setCurrentPage(1);
+  };
+
+  const handleLastPage = () => {
+    setCurrentPage(totalPages);
+  };
+
+  const handlePageClick = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 7;
+
+    if (totalPages <= maxPagesToShow) {
+      // Show all pages if total is less than max
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Show first page, last page, current page, and nearby pages
+      const leftSide = Math.max(2, currentPage - 1);
+      const rightSide = Math.min(totalPages - 1, currentPage + 1);
+
+      pageNumbers.push(1);
+
+      if (leftSide > 2) {
+        pageNumbers.push('...');
+      }
+
+      for (let i = leftSide; i <= rightSide; i++) {
+        if (i !== 1 && i !== totalPages) {
+          pageNumbers.push(i);
+        }
+      }
+
+      if (rightSide < totalPages - 1) {
+        pageNumbers.push('...');
+      }
+
+      pageNumbers.push(totalPages);
+    }
+
+    return pageNumbers;
   };
 
   return (
@@ -134,7 +201,7 @@ function SearchLayout() {
         <div>
           <p>
             {isLatLongSearch
-              ? "Showing 5 closest results for the given lat/long coordinates"
+              ? "Showing the 5 closest results for the given lat/long coordinates"
               : `${results.length} result${results.length !== 1 ? 's' : ''}`
             }
           </p>
@@ -150,7 +217,7 @@ function SearchLayout() {
                 </tr>
               </thead>
               <tbody>
-                {results.map((result, index) => (
+                {currentPageResults.map((result, index) => (
                   <tr key={index}>
                     {Object.keys(result).map((column) => (
                       <td key={column}>
@@ -162,6 +229,39 @@ function SearchLayout() {
               </tbody>
             </table>
           </div>
+          {!isLatLongSearch && totalPages > 1 && (
+            <div>
+              <button onClick={handleFirstPage} disabled={currentPage === 1}>
+                First
+              </button>
+              <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+                Previous
+              </button>
+              {getPageNumbers().map((pageNum, index) => (
+                pageNum === '...' ? (
+                  <span key={`ellipsis-${index}`}> ... </span>
+                ) : (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageClick(pageNum)}
+                    disabled={pageNum === currentPage}
+                    style={{
+                      fontWeight: pageNum === currentPage ? 'bold' : 'normal',
+                      backgroundColor: pageNum === currentPage ? '#e0e0e0' : 'transparent'
+                    }}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              ))}
+              <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                Next
+              </button>
+              <button onClick={handleLastPage} disabled={currentPage === totalPages}>
+                Last
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div>
