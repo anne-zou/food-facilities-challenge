@@ -8,9 +8,12 @@ function SearchLayout() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatuses, setSelectedStatuses] = useState([...STATUS_VALUES]);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [searchByApplicant, setSearchByApplicant] = useState(true);
+  const [searchByAddress, setSearchByAddress] = useState(true);
+  const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
   const itemsPerPage = 25;
 
-  // Load all rows on component mount and when status filter changes
+  // Load all rows on component mount and when filters change
   useEffect(() => {
     if (!window.db) {
       return;
@@ -22,7 +25,7 @@ function SearchLayout() {
     } else {
       loadAllRows();
     }
-  }, [selectedStatuses]);
+  }, [selectedStatuses, searchByApplicant, searchByAddress]);
 
   const performSearch = () => {
     if (!window.db) {
@@ -83,10 +86,32 @@ function SearchLayout() {
       setCurrentPage(1);
       console.log(`Found ${searchResults.length} nearest results:`, searchResults);
     } else {
-      // Text search on Applicant or Address columns
+      // Text search on Applicant and/or Address columns
+      const whereConditions = [];
+      const bindings = [];
+
+      if (searchByApplicant) {
+        whereConditions.push('"Applicant" LIKE ?');
+        bindings.push(`%${searchQuery}%`);
+      }
+
+      if (searchByAddress) {
+        whereConditions.push('"Address" LIKE ?');
+        bindings.push(`%${searchQuery}%`);
+      }
+
+      // If no search fields selected, return empty results
+      if (whereConditions.length === 0) {
+        setResults([]);
+        setIsLatLongSearch(false);
+        setCurrentPage(1);
+        console.log('No search fields selected');
+        return;
+      }
+
       let sql = `
         SELECT * FROM food_facilities
-        WHERE ("Applicant" LIKE ? OR "Address" LIKE ?)
+        WHERE (${whereConditions.join(' OR ')})
       `;
 
       // Add status filter
@@ -96,9 +121,6 @@ function SearchLayout() {
       }
 
       const stmt = window.db.prepare(sql);
-
-      const searchPattern = `%${searchQuery}%`;
-      const bindings = [searchPattern, searchPattern];
 
       // Add status values to bindings if filtering
       if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
@@ -211,6 +233,13 @@ function SearchLayout() {
     setSelectedStatuses([]);
   };
 
+  const getSelectedFieldsCount = () => {
+    let count = 0;
+    if (searchByApplicant) count++;
+    if (searchByAddress) count++;
+    return count;
+  };
+
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pageNumbers = [];
@@ -264,6 +293,43 @@ function SearchLayout() {
             placeholder="Enter search query..."
             style={{ flex: 1 }}
           />
+          <div style={{ position: 'relative' }}>
+            <button type="button" onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}>
+              Search Fields ({getSelectedFieldsCount()}/2)
+            </button>
+            {showFieldsDropdown && (
+              <div style={{
+                border: '1px solid #ccc',
+                padding: '10px',
+                marginTop: '5px',
+                backgroundColor: 'white',
+                position: 'absolute',
+                zIndex: 1000,
+                minWidth: '200px'
+              }}>
+                <div style={{ marginBottom: '5px' }}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={searchByApplicant}
+                      onChange={(e) => setSearchByApplicant(e.target.checked)}
+                    />
+                    {' '}Search by Applicant
+                  </label>
+                </div>
+                <div style={{ marginBottom: '5px' }}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={searchByAddress}
+                      onChange={(e) => setSearchByAddress(e.target.checked)}
+                    />
+                    {' '}Search by Address
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
           <div style={{ position: 'relative' }}>
             <button type="button" onClick={() => setShowStatusDropdown(!showStatusDropdown)}>
               Filter by Status ({selectedStatuses.length}/{STATUS_VALUES.length})
