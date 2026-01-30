@@ -1,56 +1,169 @@
-# Food Facilities Challenge
+# Food Facilities Search 
 
-Use this data set about Mobile Food Facilities in San Francisco (https://data.sfgov.org/Economy-and-Community/Mobile-Food-Facility-Permit/rqzj-sfat/data) to build an application. Please clarify with your recruiter first if you will be doing the Backend Focused or Frontend Focused version of the project, and what language you will be doing the challenge in. Make sure this is clear before you start this challenge.
+A React web app for searching **mobile food facility permits** on file with the **San Francisco Department of Public Works**, built as a solution for the Food Facilities Challenge (Frontend Focused Version).
 
-**Backend Focused Version**
+The goal of this project is to provide a simple, fast **frontend-only search experience** over a small, public dataset, without introducing unnecessary backend complexity.
 
-Your Application should have the following features:
-- Search by name of applicant. Include optional filter on "Status" field.
-- Search by street name. The user should be able to type just part of the address. Example: Searching for "SAN" should return food trucks on "SANSOME ST"
-- Given a latitude and longitude, the API should return the 5 nearest food trucks. By default, this should only return food trucks with status "APPROVED", but the user should be able to override this and search for all statuses.
-  - You can use any external services to help with this (e.g. Google Maps API).
-- We write automated tests and we would like you to do so as well.
+## Problem Statement
 
-*Bonus Points:*
-- Use an API documentation tool
-- Provide a dockerfile with everything necessary to run your application (for backend focused candidates)
-- Build a UI
+Users need to search and review a dataset of mobile food facility permits in San Francisco.
 
-**Frontend Focused Version**
+Dataset characteristics:
+- Public
+- Small (< 1 KB)
+- Updated weekly
+- Read-only
 
-Your application should have the following features:
-- Search by name of applicant. Include optional filter on "Status" field.
-- Search by street name. The user should be able to type just part of the address. Example: Searching for "SAN" should return food trucks on "SANSOME ST"
-- Build a UI using a frontend framework like React. You have creative freedom to design the UI however you would like.
+### Core Requirements
 
-*Bonus points:*
-- Write automated tests
-- Use an API documentation tool
-- Build the other features listed in the Backend Focused Version
+- Build a UI using a modern frontend framework
+- Search by **Applicant** (business name)
+- Search by **Address** (partial street name match)
 
-## README
+### Optional / Bonus Features
+- Filter by **Status** (APPROVED, REQUESTED, etc.)
+- Geolocation-based search (nearest facilities)
+- Automated tests
+- API documentation tooling
 
-Your code should include a README file including the following items:
 
-- Description of the problem and solution;
-- Reasoning behind your technical/architectural decisions
-- Critique section:
-  - What would you have done differently if you had spent more time on this?
-  - What are the trade-offs you might have made?
-  - What are the things you left out?
-  - What are the problems with your implementation and how would you solve them if we had to scale the application to a large number of users?
-- Please document any steps necessary to run your solution and your tests.
+## Solution Overview
 
-## How we review
+This project implements a **pure frontend React application** that:
 
-We value quality over feature-completeness. It is fine to leave things aside provided you call them out in your project's README.
-The aspects of your code we will assess include:
+- Bundles the provided CSV dataset with the code
+- Loads the data into an **in-memory SQLite database** (SQL.js)
+- Executes all search, filtering, and ranking logic locally
+- Displays results in a paginated table
 
-- Clarity: does the README clearly and concisely explains the problem and solution? Are technical tradeoffs explained?
-- Correctness: does the application do what was asked? If there is anything missing, does the README explain why it is missing?
-- Code quality: is the code simple, easy to understand, and maintainable? Are there any code smells or other red flags? Does object-oriented code follows principles such as the single responsibility principle? Is the coding style consistent with the language's guidelines? Is it consistent throughout the codebase?
-- Security: are there any obvious vulnerabilities?
-- Technical choices: do choices of libraries, databases, architecture etc. seem appropriate for the chosen application?
+There is **no backend service** and **no external database**. Given the size and nature of the dataset, this keeps the system simple, easy to set up, and easy to understand.
 
-## What to send back to our team
-Please send an email back to your point of contact with a compressed (zip) file of your Github project repo when done.
+### Tech Stack
+
+- **Frontend:** React 19 + Vite
+- **Database:** SQL.js (SQLite in the browser)
+- **State Management:** React Context API
+- **Styling:** Bootstrap + StyleX
+
+### Features
+
+- **Text Search**
+  - Search by `Applicant` and/or `Address`
+  - Partial matching supported
+
+- **Status Filtering**
+  - Filter by permit status
+  - Multi-select with select-all / deselect-all
+
+- **Geolocation Search**
+  - Input format: `latitude, longitude`
+  - Returns the **5 nearest facilities** using a Haversine calculation
+
+- **Pagination**
+  - 25 results per page for text searches
+  - Geolocation searches return a maximum of 5 results
+
+- **Auto-refresh**
+  - Searches re-run automatically when filters or selected fields change
+
+## Architecture & Design Decisions
+
+### Frontend-only architecture
+
+The dataset is small, public, and read-only, so we do not need to worry about client-side storage limitations, data security, or persistent writes for the purposes of this challenge. We will use a frontend-only architecture to avoid the unnecessary complexity of adding a backend and external database.
+
+### In-browser SQLite (SQL.js)
+
+We will use SQLite since it allows us to leverage built-in text search (`LIKE`) in the browser and keep our search queries declarative and centralized.
+
+### Context API
+
+We will use the React Context API to make search state and update handlers accessible across the component tree without prop drilling.
+
+### Bootstrap + StyleX
+
+We use Bootstrap to leverage its built-in responsive design and pre-styled component library. We also use StyleX to apply component-specific CSS-in-JS atomically while ensuring predictable performance and preventing naming collisions.
+
+### UI design
+
+We will optimize the UI for an **administrative review use case** (e.g. permit review), not for consumer discovery:
+- Results are displayed in a table
+- All dataset columns are visible
+- Filters are explicit and controllable
+- Pagination keeps large result sets readable
+
+### Documentation
+
+We will use Docusaurus as own API Documentation tool to leverage its built-in support for Markdown with React-based architecture, which is conveniently consistent with our app.
+
+## Critiques
+
+### What would you have done differently with more time?
+
+- Fetch data directly from the SF Data API instead of bundling a local CSV to avoid serving stale data
+- Cache the dataset locally to reduce load time (the dataset is updated weekly)
+- Add basic search autocomplete for Applicant and Address fields
+
+
+### What are the trade-offs you might have made?
+
+**Frontend-only search vs backend search**
+
+Frontend:
+- \- Only viable if the dataset remains small and infrequently updated
+- \- Search logic is tightly coupled to the UI
+- \+ Simple, centralized codebase with minimal setup and maintenance
+
+Backend:
+- \+ Can support large or frequently changing datasets
+- \+ Search logic can be reused by other clients (e.g. CLI, other UIs)
+- \- Requires additional infrastructure and ongoing maintenance
+
+Given the size and usage of the dataset, the frontend-only approach was chosen intentionally.
+
+### What are the things you left out?
+
+- Search autocomplete (lower priority)
+- Map-based visualization of results (e.g. Google Maps)
+- User accounts and authentication
+- Displaying user search history 
+
+These features were excluded due to lack of clear product requirements and to keep the scope focused.
+
+### Scaling considerations and limitations
+
+The current implementation assumes a small, public, read-only dataset and a limited number of users. If we needed to scale to a larger number of users:
+
+- Introduce user authentication and authorization (e.g. restrict access to SFDPW staff)
+- Rate limit search requests to prevent abuse
+- Move search logic to a backend service backed by an external database such as Postgres or MySQL larger, more frequently updated, or privacy-sensitive datasets
+- Add scheduled jobs to keep data in sync with source APIs
+- Index data with Elasticsearch to support more complex search queries and results ranking
+- If we scale to support searching multiple datasets (e.g. food facility permit data from multiple cities) we will need to normalize the data into a consistent set of searchable fields
+- Add logging, monitoring, and health checks
+- Horizontally scale backend services and deploy them close to users to reduce latency
+
+## Running the Application
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Application
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # Production build to dist/
+npm run preview    # Preview production build
+```
+
+### Documentation (Docusaurus)
+
+```bash
+cd docs
+npm install
+npm start          # http://localhost:3000
+npm run build      # Production build to build/
+npm run serve      # Serve production build
