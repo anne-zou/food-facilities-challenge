@@ -54,18 +54,17 @@ export async function initDatabase() {
   
   // Insert each row from the parsed CSV into the table:
   parsedCSV.data.forEach(row => {
-    // Extract row values from the row object
+    // Extract the value for each column from the row object
     // Row object: {locationid: '1571753', Applicant: 'The Geez Freeze', ...}  
     // Row values: ['1571753', 'The Geez Freeze', ...]
     const rowValues = columnNames.map(col => row[col]);
-    // bind(): Safely bind values to placeholders, preventing SQL injection
+    // Bind values to placeholders, preventing SQL injection
     insertSQL.bind(rowValues || null);
-    // step(): Execute the insert statement for the row
+    // Execute the insert statement for this row
     insertSQL.step();
-    // reset(): Reset statement to insert different values for the next row
+    // Reset the statement for the next row
     insertSQL.reset();
   });
-  // finalize(): Releases statement resources
   insertSQL.finalize();
   console.log(`Loaded ${parsedCSV.data.length} records into database`);
 

@@ -1,7 +1,7 @@
-import { SearchProvider } from './contexts/SearchContext';
-import SearchForm from './components/SearchForm';
-import ResultsTable from './components/ResultsTable';
-import Pagination from './components/Pagination';
+import { SearchProvider } from '../contexts/SearchContext';
+import SearchForm from './SearchForm';
+import ResultsTable from './ResultsTable';
+import Pagination from './Pagination';
 import * as stylex from '@stylexjs/stylex';
 
 const styles = stylex.create({

@@ -38,7 +38,6 @@ npm run serve      # Serve production build
   - src/
     - main.jsx (mounts React)
     - App.jsx (top-level component)
-    - SearchLayout.jsx (page layout)
     - index.css (global styles)
 
     - db/
@@ -49,6 +48,7 @@ npm run serve      # Serve production build
       - SearchContext.jsx (context for managing search state)
 
     - components/
+      - SearchLayout.jsx (page layout)
       - SearchForm.jsx
       - SearchFieldsFilter.jsx
       - StatusFilter.jsx

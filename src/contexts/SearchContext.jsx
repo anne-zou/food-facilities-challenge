@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { STATUS_VALUES } from '../schema';
+import { STATUS_VALUES } from '../db/schema';
 
 const SearchContext = createContext();
 

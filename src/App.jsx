@@ -1,4 +1,4 @@
-import SearchLayout from './SearchLayout'
+import SearchLayout from './components/SearchLayout'
 import * as stylex from '@stylexjs/stylex'
 
 const styles = stylex.create({

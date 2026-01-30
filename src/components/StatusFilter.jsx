@@ -1,5 +1,5 @@
 import { useSearch } from '../contexts/SearchContext';
-import { STATUS_VALUES } from '../schema';
+import { STATUS_VALUES } from '../db/schema';
 import * as stylex from '@stylexjs/stylex';
 
 const styles = stylex.create({
