@@ -2,5 +2,25 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          [
+            '@stylexjs/babel-plugin',
+            {
+              dev: process.env.NODE_ENV === 'development',
+              runtimeInjection: true,
+              genConditionalClasses: true,
+              treeshakeCompensation: true,
+              unstable_moduleResolution: {
+                type: 'commonJS',
+                rootDir: process.cwd(),
+              },
+            },
+          ],
+        ],
+      },
+    }),
+  ],
 })

@@ -2,15 +2,41 @@ import { SearchProvider } from './contexts/SearchContext';
 import SearchForm from './components/SearchForm';
 import ResultsTable from './components/ResultsTable';
 import Pagination from './components/Pagination';
+import * as stylex from '@stylexjs/stylex';
+
+const styles = stylex.create({
+  container: {
+    maxWidth: '100%',
+    width: '100%',
+    margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  bottomPagination: {
+    paddingTop: '1rem',
+  }
+});
 
 function SearchLayout() {
   return (
     <SearchProvider>
-      <div>
-        <h1>San Francisco Food Facilities</h1>
-        <SearchForm />
-        <ResultsTable />
-        <Pagination />
+      <div {...stylex.props(styles.container)}>
+        <div {...stylex.props(styles.card)}>
+          <SearchForm />
+          <ResultsTable />
+        </div>
+        <div {...stylex.props(styles.bottomPagination)}>
+          <Pagination />
+        </div>
       </div>
     </SearchProvider>
   );

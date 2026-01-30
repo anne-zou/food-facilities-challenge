@@ -1,4 +1,35 @@
 import { useSearch } from '../contexts/SearchContext';
+import * as stylex from '@stylexjs/stylex';
+
+const styles = stylex.create({
+  container: {
+    position: 'relative',
+    flexShrink: 0,
+  },
+  button: {
+    whiteSpace: 'nowrap',
+  },
+  dropdown: {
+    border: '1px solid #dee2e6',
+    borderRadius: '0.375rem',
+    padding: '1rem',
+    marginTop: '0.5rem',
+    backgroundColor: 'white',
+    position: 'absolute',
+    zIndex: 1000,
+    minWidth: '250px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  checkboxItem: {
+    marginBottom: '0.5rem',
+  },
+  label: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    cursor: 'pointer',
+  }
+});
 
 function SearchFieldsFilter() {
   const {
@@ -18,38 +49,37 @@ function SearchFieldsFilter() {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
-      <button type="button" onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}>
+    <div {...stylex.props(styles.container)}>
+      <button
+        type="button"
+        onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}
+        {...stylex.props(styles.button)}
+        className="btn btn-outline-secondary"
+      >
         Search Fields ({getSelectedCount()}/2)
       </button>
       {showFieldsDropdown && (
-        <div style={{
-          border: '1px solid #ccc',
-          padding: '10px',
-          marginTop: '5px',
-          backgroundColor: 'white',
-          position: 'absolute',
-          zIndex: 1000,
-          minWidth: '200px'
-        }}>
-          <div style={{ marginBottom: '5px' }}>
-            <label>
+        <div {...stylex.props(styles.dropdown)}>
+          <div {...stylex.props(styles.checkboxItem)}>
+            <label {...stylex.props(styles.label)} className="form-check-label">
               <input
                 type="checkbox"
                 checked={searchByApplicant}
                 onChange={(e) => setSearchByApplicant(e.target.checked)}
+                className="form-check-input"
               />
-              {' '}Search by Applicant
+              Search by Applicant
             </label>
           </div>
-          <div style={{ marginBottom: '5px' }}>
-            <label>
+          <div {...stylex.props(styles.checkboxItem)}>
+            <label {...stylex.props(styles.label)} className="form-check-label">
               <input
                 type="checkbox"
                 checked={searchByAddress}
                 onChange={(e) => setSearchByAddress(e.target.checked)}
+                className="form-check-input"
               />
-              {' '}Search by Address
+              Search by Address
             </label>
           </div>
         </div>

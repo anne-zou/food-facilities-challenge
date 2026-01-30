@@ -4,14 +4,72 @@
   box-sizing: border-box;
 }
 
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
 }
 
 #root {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+table {
+  font-size: 0.875rem;
+}
+
+th {
+  white-space: nowrap;
+}
+
+button {
+  font-size: 0.875rem;
+}
+
+input {
+  font-size: 0.875rem;
+}
+
+.form-control {
+  font-size: 0.875rem;
+}
+
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Bootstrap Button Overrides */
+.btn-outline-secondary,
+.btn-secondary,
+.btn-outline-primary,
+.btn-primary {
+  border: none;
+  font-size: 0.875rem;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-primary:hover,
+.btn-primary:focus {
+  border: none;
+}
+
+.page-number-btn {
+  min-width: 2.25rem;
 }

@@ -1,4 +1,19 @@
 import { useSearch } from '../contexts/SearchContext';
+import * as stylex from '@stylexjs/stylex';
+
+const styles = stylex.create({
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '0.5rem',
+    flexWrap: 'wrap',
+  },
+  ellipsis: {
+    padding: '0.375rem 0.75rem',
+    color: '#6c757d',
+  }
+});
 
 function Pagination() {
   const { currentPage, setCurrentPage, totalPages, isLatLongSearch } = useSearch();
@@ -42,35 +57,34 @@ function Pagination() {
   }
 
   return (
-    <div>
-      <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
-        First
-      </button>
-      <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
+    <div {...stylex.props(styles.container)}>
+      <button
+        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+        disabled={currentPage === 1}
+        className="btn btn-sm btn-outline-secondary"
+      >
         Previous
       </button>
       {getPageNumbers().map((pageNum, index) => (
         pageNum === '...' ? (
-          <span key={`ellipsis-${index}`}> ... </span>
+          <span key={`ellipsis-${index}`} {...stylex.props(styles.ellipsis)}>...</span>
         ) : (
           <button
             key={pageNum}
             onClick={() => setCurrentPage(pageNum)}
             disabled={pageNum === currentPage}
-            style={{
-              fontWeight: pageNum === currentPage ? 'bold' : 'normal',
-              backgroundColor: pageNum === currentPage ? '#e0e0e0' : 'transparent'
-            }}
+            className={pageNum === currentPage ? 'btn btn-sm btn-secondary page-number-btn' : 'btn btn-sm btn-outline-secondary page-number-btn'}
           >
             {pageNum}
           </button>
         )
       ))}
-      <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
+      <button
+        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+        disabled={currentPage === totalPages}
+        className="btn btn-sm btn-outline-secondary"
+      >
         Next
-      </button>
-      <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
-        Last
       </button>
     </div>
   );
