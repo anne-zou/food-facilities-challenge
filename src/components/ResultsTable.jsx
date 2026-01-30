@@ -1,5 +1,4 @@
 import { useSearch } from '../contexts/SearchContext';
-import Pagination from './Pagination';
 import * as stylex from '@stylexjs/stylex';
 
 const styles = stylex.create({
@@ -7,6 +6,8 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
+    flex: 1,
+    minHeight: 0,
   },
   noResults: {
     textAlign: 'center',
@@ -19,17 +20,21 @@ const styles = stylex.create({
     fontSize: '0.875rem',
     fontWeight: '500',
     margin: 0,
-  },
-  resultsRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: '0.5rem',
   },
   tableWrapper: {
     overflowX: 'auto',
+    overflowY: 'auto',
     borderRadius: '0.375rem',
     border: '1px solid #dee2e6',
+    maxHeight: 'calc(100vh - 300px)',
+    flex: 1,
+  },
+  stickyHeader: {
+    position: 'sticky',
+    top: 0,
+    backgroundColor: '#f8f9fa',
+    zIndex: 10,
   }
 });
 
@@ -46,18 +51,15 @@ function ResultsTable() {
 
   return (
     <div {...stylex.props(styles.container)}>
-      <div {...stylex.props(styles.resultsRow)}>
-        <p {...stylex.props(styles.resultsInfo)}>
-          {isLatLongSearch
-            ? "Showing the 5 closest results for the given lat/long coordinates"
-            : `${results.length} result${results.length !== 1 ? 's' : ''}`
-          }
-        </p>
-        <Pagination />
-      </div>
+      <p {...stylex.props(styles.resultsInfo)}>
+        {isLatLongSearch
+          ? "Showing the 5 closest results for the given lat/long coordinates"
+          : `${results.length} result${results.length !== 1 ? 's' : ''}`
+        }
+      </p>
       <div {...stylex.props(styles.tableWrapper)}>
         <table className="table table-striped table-hover mb-0">
-          <thead className="table-light">
+          <thead className="table-light" {...stylex.props(styles.stickyHeader)}>
             <tr>
               {Object.keys(currentPageResults[0]).map((column) => (
                 <th key={column}>
