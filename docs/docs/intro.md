@@ -25,6 +25,7 @@ Example: 6004575.869, 2105666.974
 - **Frontend:** React 19 + Vite
 - **Database:** SQL.js (in-browser SQLite)
 - **Styles:** Bootstrap + StyleX
+- **Testing:** Jest
 
 ## Component Architecture
 
@@ -47,3 +48,9 @@ food_facilities (
   ...
 )
 ```
+
+### End-to-End Tests
+
+The project includes comprehensive E2E tests in `src/App.test.jsx` that verify the full application behavior.
+
+Each test creates a real SQLite database with test data, renders the complete App, simulates user interactions, and verifies the database, SearchContext, and UI components work together correctly.

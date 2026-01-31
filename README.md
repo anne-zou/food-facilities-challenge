@@ -44,6 +44,8 @@ There is **no backend service** and **no external database**. Given the size and
 - **Database:** SQL.js (SQLite in the browser)
 - **State Management:** React Context API
 - **Styling:** Bootstrap + StyleX
+- **Testing:** Jest
+- **Docs:** Docusaurus
 
 ### Features
 
@@ -74,15 +76,11 @@ The dataset is small, public, and read-only, so we do not need to worry about cl
 
 ### In-browser SQLite (SQL.js)
 
-We will use SQLite since it allows us to leverage built-in text search (`LIKE`) in the browser and keep our search queries declarative and centralized.
+We will use SQL.js since it allows us to leverage built-in text search (`LIKE`) in the browser and keep our search queries declarative and centralized.
 
 ### Context API
 
 We will use the React Context API to make search state and update handlers accessible across the component tree without prop drilling.
-
-### Bootstrap + StyleX
-
-We use Bootstrap to leverage its built-in responsive design and pre-styled component library. We also use StyleX to apply component-specific CSS-in-JS atomically while ensuring predictable performance and preventing naming collisions.
 
 ### UI design
 
@@ -92,16 +90,12 @@ We will optimize the UI for an **administrative review use case** (e.g. permit r
 - Filters are explicit and controllable
 - Pagination keeps large result sets readable
 
-### Documentation
-
-We will use Docusaurus as own API Documentation tool to leverage its built-in support for Markdown with React-based architecture, which is conveniently consistent with our app.
-
 ## Critiques
 
 ### What would you have done differently with more time?
 
-- Fetch data directly from the SF Data API instead of bundling a local CSV to avoid serving stale data
-- Cache the dataset locally to reduce load time (the dataset is updated weekly)
+- Fetch data directly from the SF Data API instead of parsing from a local CSV (to avoid serving stale data)
+- Cache the dataset locally (the dataset is only updated weekly)
 - Add basic search autocomplete for Applicant and Address fields
 
 
@@ -123,12 +117,16 @@ Given the size and usage of the dataset, the frontend-only approach was chosen i
 
 ### What are the things you left out?
 
-- Search autocomplete (lower priority)
-- Map-based visualization of results (e.g. Google Maps)
+- Caching the data to avoid recreating & repopulating the db every refresh 
+
+Lower priority for this project since data size is small
+
+- Map-based visualization of results
+- Search autocomplete
 - User accounts and authentication
 - Displaying user search history 
 
-These features were excluded due to lack of clear product requirements and to keep the scope focused.
+Excluded due to lack of clear product requirements and to keep the scope focused
 
 ### Scaling considerations and limitations
 
@@ -157,6 +155,13 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # Production build to dist/
 npm run preview    # Preview production build
+```
+
+### Testing
+
+```bash
+npm test           # Run all tests
+npm run test:watch # Run tests in watch mode
 ```
 
 ### Documentation (Docusaurus)

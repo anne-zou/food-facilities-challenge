@@ -18,6 +18,13 @@ npm run build      # Production build to dist/
 npm run preview    # Preview production build
 ```
 
+## Testing
+
+```bash
+npm test           # Run all tests
+npm run test:watch # Run tests in watch mode
+```
+
 ## Docusaurus
 
 ```bash
@@ -26,46 +33,6 @@ npm install
 npm start          # Dev server at http://localhost:3000
 npm run build      # Production build to build/
 npm run serve      # Serve production build
-```
-
-## File Structure
-```
-- food-facilities-challenge/
-  - index.html (landing HTML)
-  - public/jswasm/ (client-side SQLite)
-  - Mobile_Food_Facility_Permit.csv (dataset)
-
-  - src/
-    - main.jsx (mounts React)
-    - App.jsx (top-level component)
-    - index.css (global styles)
-
-    - db/
-      - init.js (initialize DB)
-      - schema.js (DB schema)
-
-    - contexts/
-      - SearchContext.jsx (context for managing search state)
-
-    - components/
-      - SearchLayout.jsx (page layout)
-      - SearchForm.jsx
-      - SearchFieldsFilter.jsx
-      - StatusFilter.jsx
-      - ResultsTable.jsx
-      - Pagination.jsx
-      
-  - docs/ (documentation site - Docusaurus)
-    - docusaurus.config.ts (site config)
-    - sidebars.ts (sidebar nav)
-    - src/
-      - pages/index.tsx (docs homepage)
-      - components/HomepageFeatures/index.tsx (homepage items)
-    - docs/
-      - intro.md (project intro)
-      - getting-started.md (quickstart and usage)
-      - search-context.md (search state handling)
-
 ```
 
 ## Troubleshooting
