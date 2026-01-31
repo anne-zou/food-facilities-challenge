@@ -51,6 +51,7 @@ function SearchFieldsFilter() {
   return (
     <div {...stylex.props(styles.container)}>
       <button
+        data-testid="search-fields-filter-button"
         type="button"
         onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}
         {...stylex.props(styles.button)}
@@ -63,6 +64,7 @@ function SearchFieldsFilter() {
           <div {...stylex.props(styles.checkboxItem)}>
             <label {...stylex.props(styles.label)} className="form-check-label">
               <input
+                data-testid="search-by-applicant-checkbox"
                 type="checkbox"
                 checked={searchByApplicant}
                 onChange={(e) => setSearchByApplicant(e.target.checked)}
@@ -74,6 +76,7 @@ function SearchFieldsFilter() {
           <div {...stylex.props(styles.checkboxItem)}>
             <label {...stylex.props(styles.label)} className="form-check-label">
               <input
+                data-testid="search-by-address-checkbox"
                 type="checkbox"
                 checked={searchByAddress}
                 onChange={(e) => setSearchByAddress(e.target.checked)}

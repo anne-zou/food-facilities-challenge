@@ -42,6 +42,7 @@ function SearchForm() {
       <div {...stylex.props(styles.searchRow)}>
         <div {...stylex.props(styles.inputWrapper)}>
           <input
+            data-testid="search-input"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -51,7 +52,7 @@ function SearchForm() {
         </div>
         <SearchFieldsFilter />
         <StatusFilter />
-        <button type="submit" {...stylex.props(styles.searchButton)} className="btn btn-primary">
+        <button data-testid="search-button" type="submit" {...stylex.props(styles.searchButton)} className="btn btn-primary">
           Search
         </button>
       </div>

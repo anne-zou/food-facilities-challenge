@@ -50,6 +50,7 @@ function StatusFilter() {
   return (
     <div {...stylex.props(styles.container)}>
       <button
+        data-testid="status-filter-button"
         type="button"
         onClick={() => setShowStatusDropdown(!showStatusDropdown)}
         {...stylex.props(styles.button)}
@@ -61,6 +62,7 @@ function StatusFilter() {
         <div {...stylex.props(styles.dropdown)}>
           <div {...stylex.props(styles.buttonGroup)}>
             <button
+              data-testid="select-all-status-filters-button"
               type="button"
               onClick={handleSelectAllStatuses}
               className="btn btn-sm btn-outline-primary"
@@ -68,6 +70,7 @@ function StatusFilter() {
               Select All
             </button>
             <button
+              data-testid="deselect-all-status-filters-button"
               type="button"
               onClick={handleDeselectAllStatuses}
               className="btn btn-sm btn-outline-secondary"
@@ -79,6 +82,7 @@ function StatusFilter() {
             <div key={status} {...stylex.props(styles.checkboxItem)}>
               <label {...stylex.props(styles.label)} className="form-check-label">
                 <input
+                  data-testid={`${status.toLowerCase()}-checkbox`}
                   type="checkbox"
                   checked={selectedStatuses.includes(status)}
                   onChange={() => handleStatusToggle(status)}

@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import { schema } from './schema';
+import initSqlJs from 'sql.js';
 
 // Helper function to parse CSV text using PapaParse
 async function parseCSV(csvText) {
@@ -15,34 +16,18 @@ async function parseCSV(csvText) {
 
 // Initialize the SQLite database, create table, and load data from CSV
 export async function initDatabase() {
-
-  const sqlite3 = await window.sqlite3InitModule({
-    // Disable console.log output (enable to see SQL TRACE logs for debugging)
-    print: () => {}
+  // Initialize sql.js
+  const SQL = await initSqlJs({
+    locateFile: file => `https://sql.js.org/dist/${file}`
   });
-  const db = new sqlite3.oo1.DB("/food-facilities-challenge.sqlite3", "ct");
+  const db = new SQL.Database();
 
   // Create custom SQL functions for trigonometry to calculate Haversine distance
   // SQLite doesn't have built-in trig functions, so we implement them in JavaScript
-  db.createFunction({
-    name: 'radians',
-    xFunc: (degrees) => degrees * Math.PI / 180
-  });
-
-  db.createFunction({
-    name: 'sin',
-    xFunc: (radians) => Math.sin(radians)
-  });
-
-  db.createFunction({
-    name: 'cos',
-    xFunc: (radians) => Math.cos(radians)
-  });
-
-  db.createFunction({
-    name: 'acos',
-    xFunc: (value) => Math.acos(value)
-  });
+  db.create_function('radians', (degrees) => degrees * Math.PI / 180);
+  db.create_function('sin', (radians) => Math.sin(radians));
+  db.create_function('cos', (radians) => Math.cos(radians));
+  db.create_function('acos', (value) => Math.acos(value));
 
   // Load and parse CSV
   const response = await fetch('/Mobile_Food_Facility_Permit.csv');
@@ -77,7 +62,7 @@ export async function initDatabase() {
   // Insert each row from the parsed CSV into the table:
   parsedCSV.data.forEach(row => {
     // Extract the value for each column from the row object
-    // Row object: {locationid: '1571753', Applicant: 'The Geez Freeze', ...}  
+    // Row object: {locationid: '1571753', Applicant: 'The Geez Freeze', ...}
     // Row values: ['1571753', 'The Geez Freeze', ...]
     const rowValues = columnNames.map(col => row[col]);
     // Bind values to placeholders, preventing SQL injection
@@ -87,7 +72,7 @@ export async function initDatabase() {
     // Reset the statement for the next row
     insertSQL.reset();
   });
-  insertSQL.finalize();
+  insertSQL.free();
   console.log(`Loaded ${parsedCSV.data.length} records into database`);
 
   window.db = db;

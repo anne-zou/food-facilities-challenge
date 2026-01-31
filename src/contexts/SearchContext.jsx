@@ -71,9 +71,9 @@ export function SearchProvider({ children, db: dbProp }) {
     }
     const allResults = [];
     while (stmt.step()) {
-      allResults.push(stmt.get({}));
+      allResults.push(stmt.getAsObject());
     }
-    stmt.finalize();
+    stmt.free();
     setResults(allResults);
     setIsLatLongSearch(false);
     setCurrentPage(1);
@@ -112,9 +112,9 @@ export function SearchProvider({ children, db: dbProp }) {
 
     const searchResults = [];
     while (stmt.step()) {
-      searchResults.push(stmt.get({}));
+      searchResults.push(stmt.getAsObject());
     }
-    stmt.finalize();
+    stmt.free();
 
     setResults(searchResults);
     setIsLatLongSearch(false);
@@ -135,9 +135,9 @@ export function SearchProvider({ children, db: dbProp }) {
 
     const searchResults = [];
     while (stmt.step()) {
-      searchResults.push(stmt.get({}));
+      searchResults.push(stmt.getAsObject());
     }
-    stmt.finalize();
+    stmt.free();
 
     setResults(searchResults);
     setIsLatLongSearch(true);
