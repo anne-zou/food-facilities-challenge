@@ -8,7 +8,7 @@
  * - Cleaning up the database after tests
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 import { schema } from '../db/schema';
@@ -109,6 +109,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
       expect(screen.getByText('Burger Express')).toBeInTheDocument();
       expect(screen.getByText('Pizza Palace')).toBeInTheDocument();
       expect(screen.getByText('Taco Truck')).toBeInTheDocument();
+      expect(screen.getByText('4 results')).toBeInTheDocument();
     });
   });
 
@@ -133,6 +134,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
       // Should show only Burger Express
       await waitFor(() => {
         expect(screen.getByText('Burger Express')).toBeInTheDocument();
+        expect(screen.getByText('1 result')).toBeInTheDocument();
       });
 
       // Should not show other vendors
@@ -159,6 +161,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
       // Should show only vendor on Oak St
       await waitFor(() => {
         expect(screen.getByText('Taco Truck')).toBeInTheDocument();
+        expect(screen.getByText('1 result')).toBeInTheDocument();
       });
 
       // Should not show vendors on other streets
@@ -188,6 +191,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
         expect(screen.getByText('Taco Truck')).toBeInTheDocument();
+        expect(screen.getByText('2 results')).toBeInTheDocument();
       });
     });
 
@@ -209,6 +213,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
+        expect(screen.getByText('1 result')).toBeInTheDocument();
       });
 
       expect(screen.queryByText('Burger Express')).not.toBeInTheDocument();
@@ -233,7 +238,43 @@ describe('Food Facilities Search App - E2E Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
         expect(screen.getByText('Taco Truck')).toBeInTheDocument();
+        expect(screen.getByText('2 results')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Geo search', () => {
+    test('should return nearest results for coordinates and rank by distance', async () => {
+      const user = userEvent.setup();
+      render(<App />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId('search-input');
+      const searchButton = screen.getByTestId('search-button');
+
+      // Use the exact coordinates of Tacos El Primo
+      await user.clear(searchInput);
+      await user.type(searchInput, '37.7749, -122.4194');
+      await user.click(searchButton);
+
+      // Geo search should show the geo-results info and include a distance_km column
+      await waitFor(() => {
+        expect(screen.getByText('Showing the 5 closest results for the given lat/long coordinates')).toBeInTheDocument();
+      });
+
+      // Table should be present (use test ids)
+      const table = screen.getByTestId('results-table');
+      const rows = table.querySelectorAll('tbody tr');
+
+      // All 4 test rows should be returned (we have 4 records and GEO_SEARCH_MAX_RESULTS is 5)
+      expect(rows.length).toBe(4);
+
+      // Applicants should be in order of distance (closest first)
+      const applicants = Array.from(rows).map((_, i) => screen.getByTestId(`applicant-${i}`).textContent);
+      expect(applicants).toEqual(expect.arrayContaining(['Tacos El Primo', 'Burger Express', 'Pizza Palace', 'Taco Truck']));
     });
   });
 
@@ -265,6 +306,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
         expect(screen.getByText('Burger Express')).toBeInTheDocument();
+        expect(screen.getByText('2 results')).toBeInTheDocument();
       });
 
       expect(screen.queryByText('Pizza Palace')).not.toBeInTheDocument();
@@ -298,6 +340,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
         expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
         expect(screen.getByText('Burger Express')).toBeInTheDocument();
         expect(screen.getByText('Pizza Palace')).toBeInTheDocument();
+        expect(screen.getByText('3 results')).toBeInTheDocument();
       });
 
       expect(screen.queryByText('Taco Truck')).not.toBeInTheDocument();
@@ -335,6 +378,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
       // Should NOT show "Taco Truck" (ISSUED)
       await waitFor(() => {
         expect(screen.getByText('Tacos El Primo')).toBeInTheDocument();
+        expect(screen.getByText('1 result')).toBeInTheDocument();
       });
 
       expect(screen.queryByText('Taco Truck')).not.toBeInTheDocument();
@@ -373,6 +417,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
         expect(screen.getByText('Burger Express')).toBeInTheDocument();
         expect(screen.getByText('Pizza Palace')).toBeInTheDocument();
         expect(screen.getByText('Taco Truck')).toBeInTheDocument();
+        expect(screen.getByText('4 results')).toBeInTheDocument();
       });
     });
   });

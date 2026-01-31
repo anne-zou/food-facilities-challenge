@@ -58,7 +58,7 @@ function ResultsTable() {
         }
       </p>
       <div {...stylex.props(styles.tableWrapper)}>
-        <table className="table table-striped table-hover mb-0">
+        <table data-testid="results-table" className="table table-striped table-hover mb-0">
           <thead className="table-light" {...stylex.props(styles.stickyHeader)}>
             <tr>
               {Object.keys(currentPageResults[0]).map((column) => (
@@ -70,9 +70,12 @@ function ResultsTable() {
           </thead>
           <tbody>
             {currentPageResults.map((result, index) => (
-              <tr key={index}>
+              <tr key={index} data-testid={`result-row-${index}`}>
                 {Object.keys(result).map((column) => (
-                  <td key={column}>
+                  <td
+                    key={column}
+                    data-testid={column === 'Applicant' ? `applicant-${index}` : undefined}
+                  >
                     {result[column]}
                   </td>
                 ))}
