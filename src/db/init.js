@@ -30,7 +30,7 @@ export async function initDatabase() {
   db.create_function('acos', (value) => Math.acos(value));
 
   // Load and parse CSV
-  const response = await fetch('/Mobile_Food_Facility_Permit.csv');
+  const response = await fetch('/data/Mobile_Food_Facility_Permit.csv');
   const csvText = await response.text();
   const parsedCSV = await parseCSV(csvText);
 
