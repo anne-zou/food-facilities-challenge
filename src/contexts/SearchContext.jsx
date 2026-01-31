@@ -86,7 +86,7 @@ export function SearchProvider({ children, db: dbProp }) {
       console.log('Database not ready');
       return;
     }
-    const maybeCoordinates = sanitizeCoordinates(searchQuery);
+    const maybeCoordinates = parseCoordinates(searchQuery);
     if (maybeCoordinates) {
       searchByCoordinates(maybeCoordinates);
     } else {
@@ -146,7 +146,7 @@ export function SearchProvider({ children, db: dbProp }) {
   };
 
   // Helper to check if input matches lat,long pattern
-  const sanitizeCoordinates = (query) => {
+  const parseCoordinates = (query) => {
     const coordPattern = /^\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*$/;
     const coordMatch = query.match(coordPattern);
     return coordMatch; // returns null if input does not match lat,long pattern
