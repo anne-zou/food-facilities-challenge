@@ -32,7 +32,7 @@ Dataset characteristics:
 This project implements a **pure frontend React application** that:
 
 - Bundles the provided CSV dataset with the code
-- Loads the data into an **in-memory SQLite database** (SQL.js)
+- Loads the data into an in-memory SQLite database (SQL.js)
 - Executes all search, filtering, and ranking logic locally
 - Displays results in a paginated table
 
@@ -50,11 +50,11 @@ There is **no backend service** and **no external database**. Given the size and
 ### Features
 
 - **Text Search**
-  - Search by `Applicant` and/or `Address`
+  - Search by `Applicant`, `Address`, or both
   - Partial matching supported
 
 - **Status Filtering**
-  - Filter by permit status
+  - Filter by permit `Status`
   - Multi-select with select-all / deselect-all
 
 - **Geolocation Search**
@@ -62,11 +62,11 @@ There is **no backend service** and **no external database**. Given the size and
   - Returns the **5 nearest facilities** using a Haversine calculation
 
 - **Pagination**
-  - 25 results per page for text searches
-  - Geolocation searches return a maximum of 5 results
+  - Maximum 25 results per page
+  - Navigate to first, last, previous, next page
 
 - **Auto-refresh**
-  - Searches re-run automatically when filters or selected fields change
+  - Search re-runs automatically when filters or selected fields change
 
 ## Architecture & Design Decisions
 
@@ -76,11 +76,11 @@ The dataset is small, public, and read-only, so we do not need to worry about cl
 
 ### In-browser SQLite (SQL.js)
 
-We will use SQL.js since it allows us to leverage built-in text search (`LIKE`) in the browser and keep our search queries declarative and centralized.
+We use SQL.js since it allows us to leverage built-in text search (`LIKE`) in the browser and keep our queries declarative and centralized.
 
 ### Context API
 
-We will use the React Context API to make search state and update handlers accessible across the component tree without prop drilling.
+We use the React Context API to make search state and update logic accessible across the component tree without prop drilling.
 
 ### UI design
 
@@ -96,7 +96,7 @@ We will optimize the UI for an **administrative review use case** (e.g. permit r
 
 - Fetch data directly from the SF Data API instead of parsing from a local CSV (to avoid serving stale data)
 - Cache the dataset locally (the dataset is only updated weekly)
-- Add basic search autocomplete for Applicant and Address fields
+- Add basic search autocomplete for `Applicant` and `Address` fields
 
 
 ### What are the trade-offs you might have made?
@@ -109,24 +109,24 @@ Frontend:
 - \+ Simple, centralized codebase with minimal setup and maintenance
 
 Backend:
-- \+ Can support large or frequently changing datasets
+- \+ Can support large or frequently changing datasets, or protect sensitive data
 - \+ Search logic can be reused by other clients (e.g. CLI, other UIs)
 - \- Requires additional infrastructure and ongoing maintenance
 
-Given the size and usage of the dataset, the frontend-only approach was chosen intentionally.
+Given the scope of this project, the frontend-only approach was chosen intentionally.
 
 ### What are the things you left out?
 
-- Caching the data to avoid recreating & repopulating the db every refresh 
+- Cache the data to avoid recreating & repopulating the db every refresh 
 
-Lower priority for this project since data size is small
+-> Lower priority for this project since dataset size is small
 
 - Map-based visualization of results
 - Search autocomplete
 - User accounts and authentication
 - Displaying user search history 
 
-Excluded due to lack of clear product requirements and to keep the scope focused
+-> Excluded to keep the scope focused on the given requirements
 
 ### Scaling considerations and limitations
 
@@ -134,11 +134,11 @@ The current implementation assumes a small, public, read-only dataset and a limi
 
 - Introduce user authentication and authorization (e.g. restrict access to SFDPW staff)
 - Rate limit search requests to prevent abuse
-- Move search logic to a backend service backed by an external database such as Postgres or MySQL larger, more frequently updated, or privacy-sensitive datasets
+- Move search logic to a backend service backed by an external database such as Postgres or MySQL for better scalability and security 
 - Add scheduled jobs to keep data in sync with source APIs
-- Index data with Elasticsearch to support more complex search queries and results ranking
-- If we scale to support searching multiple datasets (e.g. food facility permit data from multiple cities) we will need to normalize the data into a consistent set of searchable fields
 - Add logging, monitoring, and health checks
+- If we scale to support searching multiple datasets (e.g. food facility permit data from multiple cities) we will need to normalize the data into a consistent set of searchable fields
+- Index data with Elasticsearch if we need to support more complex search queries / results ranking
 - Horizontally scale backend services and deploy them close to users to reduce latency
 
 ## Running the Application
