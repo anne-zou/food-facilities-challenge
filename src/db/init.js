@@ -22,6 +22,28 @@ export async function initDatabase() {
   });
   const db = new sqlite3.oo1.DB("/food-facilities-challenge.sqlite3", "ct");
 
+  // Create custom SQL functions for trigonometry to calculate Haversine distance
+  // SQLite doesn't have built-in trig functions, so we implement them in JavaScript
+  db.createFunction({
+    name: 'radians',
+    xFunc: (degrees) => degrees * Math.PI / 180
+  });
+
+  db.createFunction({
+    name: 'sin',
+    xFunc: (radians) => Math.sin(radians)
+  });
+
+  db.createFunction({
+    name: 'cos',
+    xFunc: (radians) => Math.cos(radians)
+  });
+
+  db.createFunction({
+    name: 'acos',
+    xFunc: (value) => Math.acos(value)
+  });
+
   // Load and parse CSV
   const response = await fetch('/Mobile_Food_Facility_Permit.csv');
   const csvText = await response.text();

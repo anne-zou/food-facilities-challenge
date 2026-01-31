@@ -1,9 +1,11 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { STATUS_VALUES } from '../db/schema';
+import { buildGeoSearchQuery, buildTextSearchQuery, buildLoadAllQuery } from '../db/queries';
 
 const SearchContext = createContext();
 
-export function SearchProvider({ children }) {
+export function SearchProvider({ children, db: dbProp }) {
+  const [db] = useState(() => dbProp || window.db || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isLatLongSearch, setIsLatLongSearch] = useState(false);
@@ -15,95 +17,88 @@ export function SearchProvider({ children }) {
   const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
   const itemsPerPage = 25;
 
-  // Load all rows on component mount and when filters change
+  // Refresh table on component mount and when user selects/deselects 
+  // a search field or status filter
   useEffect(() => {
-    if (!window.db) {
+    if (!db) {
       return;
     }
-
     if (searchQuery.trim()) {
-      performSearch();
+      performSearch(); // perform search if there's a query
     } else {
-      loadAllRows();
+      loadAllRows(); // load all rows on component mount
     }
-  }, [selectedStatuses, searchByApplicant, searchByAddress]);
+  }, [db, selectedStatuses, searchByApplicant, searchByAddress]);
 
-  const performSearch = () => {
-    if (!window.db) {
+  // Handler function for search form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      console.log('Submitted empty search input, loading all rows again');
+      loadAllRows();
+      return;
+    }
+    performSearch();
+  };
+
+  // Handler functions for status filter toggles
+  const handleStatusToggle = (status) => {
+    setSelectedStatuses(prev => {
+      if (prev.includes(status)) {
+        return prev.filter(s => s !== status);
+      } else {
+        return [...prev, status];
+      }
+    });
+  };
+  const handleSelectAllStatuses = () => {
+    setSelectedStatuses([...STATUS_VALUES]);
+  };
+  const handleDeselectAllStatuses = () => {
+    setSelectedStatuses([]);
+  };
+
+  // Helper function for loading all rows without any search query
+  const loadAllRows = () => {
+    if (!db) {
       console.log('Database not ready');
       return;
     }
+    const { sql, bindings } = buildLoadAllQuery(selectedStatuses);
+    const stmt = db.prepare(sql);
+    if (bindings.length > 0) {
+      stmt.bind(bindings);
+    }
+    const allResults = [];
+    while (stmt.step()) {
+      allResults.push(stmt.get({}));
+    }
+    stmt.finalize();
+    setResults(allResults);
+    setIsLatLongSearch(false);
+    setCurrentPage(1);
+    console.log(`Loaded ${allResults.length} rows`);
+  };
 
-    const coordPattern = /^\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*$/;
-    const coordMatch = searchQuery.match(coordPattern);
-
-    if (coordMatch) {
-      searchByCoordinates(coordMatch);
+  // Helper function for performing search
+  const performSearch = () => {
+    if (!db) {
+      console.log('Database not ready');
+      return;
+    }
+    const maybeCoordinates = sanitizeCoordinates(searchQuery);
+    if (maybeCoordinates) {
+      searchByCoordinates(maybeCoordinates);
     } else {
       searchByText();
     }
   };
 
-  const searchByCoordinates = (coordMatch) => {
-    const searchLat = parseFloat(coordMatch[1]);
-    const searchLon = parseFloat(coordMatch[2]);
-
-    console.log(`Searching for nearest locations to: ${searchLat}, ${searchLon}`);
-
-    let sql = `
-      SELECT *,
-        (6371 * acos(
-          cos(? * 3.14159265359 / 180) * cos(CAST("Latitude" AS REAL) * 3.14159265359 / 180) *
-          cos((CAST("Longitude" AS REAL) - ?) * 3.14159265359 / 180) +
-          sin(? * 3.14159265359 / 180) * sin(CAST("Latitude" AS REAL) * 3.14159265359 / 180)
-        )) AS distance_km
-      FROM food_facilities
-      WHERE "Latitude" IS NOT NULL AND "Longitude" IS NOT NULL
-    `;
-
-    if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
-      const placeholders = selectedStatuses.map(() => '?').join(', ');
-      sql += ` AND "Status" IN (${placeholders})`;
-    }
-
-    sql += ` ORDER BY distance_km LIMIT 5`;
-
-    const stmt = window.db.prepare(sql);
-    const bindings = [searchLat, searchLon, searchLat];
-
-    if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
-      bindings.push(...selectedStatuses);
-    }
-
-    stmt.bind(bindings);
-
-    const searchResults = [];
-    while (stmt.step()) {
-      searchResults.push(stmt.get({}));
-    }
-    stmt.finalize();
-
-    setResults(searchResults);
-    setIsLatLongSearch(true);
-    setCurrentPage(1);
-    console.log(`Found ${searchResults.length} nearest results:`, searchResults);
-  };
-
+  // Helper to search by text fields
   const searchByText = () => {
-    const whereConditions = [];
-    const bindings = [];
+    const queryResult = buildTextSearchQuery(searchQuery, searchByApplicant, searchByAddress, selectedStatuses);
 
-    if (searchByApplicant) {
-      whereConditions.push('"Applicant" LIKE ?');
-      bindings.push(`%${searchQuery}%`);
-    }
-
-    if (searchByAddress) {
-      whereConditions.push('"Address" LIKE ?');
-      bindings.push(`%${searchQuery}%`);
-    }
-
-    if (whereConditions.length === 0) {
+    if (!queryResult) {
       setResults([]);
       setIsLatLongSearch(false);
       setCurrentPage(1);
@@ -111,22 +106,8 @@ export function SearchProvider({ children }) {
       return;
     }
 
-    let sql = `
-      SELECT * FROM food_facilities
-      WHERE (${whereConditions.join(' OR ')})
-    `;
-
-    if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
-      const placeholders = selectedStatuses.map(() => '?').join(', ');
-      sql += ` AND "Status" IN (${placeholders})`;
-    }
-
-    const stmt = window.db.prepare(sql);
-
-    if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
-      bindings.push(...selectedStatuses);
-    }
-
+    const { sql, bindings } = queryResult;
+    const stmt = db.prepare(sql);
     stmt.bind(bindings);
 
     const searchResults = [];
@@ -141,65 +122,35 @@ export function SearchProvider({ children }) {
     console.log(`Found ${searchResults.length} text search results:`, searchResults);
   };
 
-  const loadAllRows = () => {
-    if (!window.db) {
-      console.log('Database not ready');
-      return;
-    }
+  // Helper to search by latitude and longitude
+  const searchByCoordinates = (coordinates) => {
+    const searchLat = parseFloat(coordinates[1]);
+    const searchLon = parseFloat(coordinates[2]);
 
-    let sql = `SELECT * FROM food_facilities`;
-    if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
-      const placeholders = selectedStatuses.map(() => '?').join(', ');
-      sql += ` WHERE "Status" IN (${placeholders})`;
-    }
+    console.log(`Searching for nearest locations to: ${searchLat}, ${searchLon}`);
 
-    const stmt = window.db.prepare(sql);
+    const { sql, bindings } = buildGeoSearchQuery(searchLat, searchLon, selectedStatuses);
+    const stmt = db.prepare(sql);
+    stmt.bind(bindings);
 
-    if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
-      stmt.bind(selectedStatuses);
-    }
-
-    const allResults = [];
+    const searchResults = [];
     while (stmt.step()) {
-      allResults.push(stmt.get({}));
+      searchResults.push(stmt.get({}));
     }
     stmt.finalize();
 
-    setResults(allResults);
-    setIsLatLongSearch(false);
+    setResults(searchResults);
+    setIsLatLongSearch(true);
     setCurrentPage(1);
-    console.log(`Loaded ${allResults.length} rows`);
+    console.log(`Found ${searchResults.length} nearest results:`, searchResults);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!searchQuery.trim()) {
-      console.log('Submitted empty search input, loading all rows again');
-      loadAllRows();
-      return;
-    }
-
-    performSearch();
-  };
-
-  const handleStatusToggle = (status) => {
-    setSelectedStatuses(prev => {
-      if (prev.includes(status)) {
-        return prev.filter(s => s !== status);
-      } else {
-        return [...prev, status];
-      }
-    });
-  };
-
-  const handleSelectAllStatuses = () => {
-    setSelectedStatuses([...STATUS_VALUES]);
-  };
-
-  const handleDeselectAllStatuses = () => {
-    setSelectedStatuses([]);
-  };
+  // Helper to check if input matches lat,long pattern
+  const sanitizeCoordinates = (query) => {
+    const coordPattern = /^\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*$/;
+    const coordMatch = query.match(coordPattern);
+    return coordMatch; // returns null if input does not match lat,long pattern
+  }
 
   // Calculate pagination
   const totalPages = Math.ceil(results.length / itemsPerPage);

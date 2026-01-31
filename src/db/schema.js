@@ -7,6 +7,13 @@ export const STATUS_VALUES = [
   'SUSPEND'
 ];
 
+// Column name constants for commonly used fields
+export const APPLICANT_COLUMN = 'Applicant';
+export const ADDRESS_COLUMN = 'Address';
+export const STATUS_COLUMN = 'Status';
+export const LATITUDE_COLUMN = 'Latitude';
+export const LONGITUDE_COLUMN = 'Longitude';
+
 // Schema definition for food_facilities table
 // Maps CSV column names to their SQLite data types
 export const schema = {
