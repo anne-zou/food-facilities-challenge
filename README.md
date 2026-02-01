@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/3f9f8239-b298-4b20-a763-64243f5b9cf3
 
 ## Problem Statement
 
-Users need to search and review a dataset of mobile food facility permits in San Francisco.
+Users need to search a dataset describing mobile food facility permits in San Francisco.
 
 Dataset characteristics:
 - Public
