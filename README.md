@@ -24,7 +24,7 @@ Dataset characteristics:
 
 ### Optional / Bonus Features
 - Filter by **Status** (APPROVED, REQUESTED, etc.)
-- Geolocation-based search (nearest facilities)
+- Geolocation-based search (display 5 nearest facilities)
 - Automated tests
 - API documentation tooling
 
@@ -74,7 +74,7 @@ There is **no backend service** and **no external database**. Given the size and
 
 ### Frontend-only architecture
 
-The dataset is small, public, and read-only, so we do not need to worry about client-side storage limitations, data security, or persistent writes for the purposes of this challenge. We will use a frontend-only architecture to avoid the unnecessary complexity of adding a backend and external database.
+The dataset is small, public, and read-only, so we do not need to worry about client-side storage limitations, security, or persistent writes. We will use a frontend-only architecture to avoid the unnecessary complexity of adding a backend and external database.
 
 ### In-browser SQLite (SQL.js)
 
@@ -82,11 +82,11 @@ We use SQL.js since it allows us to leverage built-in text search (`LIKE`) in th
 
 ### Context API
 
-We use the React Context API to make search state and update logic accessible across the component tree without prop drilling.
+We use the React Context API to make the search state accessible across the component tree without prop drilling.
 
 ### UI design
 
-We will optimize the UI for an **administrative review use case** (e.g. permit review), not for consumer discovery:
+Since filtering by permit status is one of the given requirements, we assume and optimize the UI for an **administrative use case**, not for consumer discovery.
 - Results are displayed in a table
 - All dataset columns are visible
 - Filters are explicit and controllable
@@ -97,9 +97,7 @@ We will optimize the UI for an **administrative review use case** (e.g. permit r
 ### What would you have done differently with more time?
 
 - Fetch data directly from the SF Data API instead of parsing from a local CSV (to avoid serving stale data)
-- Cache the dataset locally (the dataset is only updated weekly)
 - Add basic search autocomplete for `Applicant` and `Address` fields
-
 
 ### What are the trade-offs you might have made?
 
@@ -118,17 +116,12 @@ Backend:
 Given the scope of this project, the frontend-only approach was chosen intentionally.
 
 ### What are the things you left out?
+Caching the data to avoid recreating & repopulating the db every refresh 
+ - Not necessary for optimizing load time since dataset size is small
 
-- Cache the data to avoid recreating & repopulating the db every refresh 
 
--> Lower priority for this project since dataset size is small
-
-- Map-based visualization of results
-- Search autocomplete
-- User accounts and authentication
-- Displaying user search history 
-
--> Excluded to keep the scope focused on the given requirements
+Map-based visualization of results, search autocomplete, user accounts and authentication, displaying user search history 
+ - Excluded to keep the scope focused on the given requirements
 
 ### Scaling considerations and limitations
 
