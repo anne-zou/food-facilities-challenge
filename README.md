@@ -4,6 +4,8 @@ A React web app for searching **mobile food facility permits** on file with the 
 
 The goal of this project is to provide a simple, fast **frontend-only search experience** over a small, public dataset, without introducing unnecessary backend complexity.
 
+https://github.com/user-attachments/assets/3f9f8239-b298-4b20-a763-64243f5b9cf3
+
 ## Problem Statement
 
 Users need to search and review a dataset of mobile food facility permits in San Francisco.
