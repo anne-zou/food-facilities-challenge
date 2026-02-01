@@ -2,6 +2,7 @@ import { useSearch } from '../contexts/SearchContext';
 import StatusFilter from './StatusFilter';
 import SearchFieldsFilter from './SearchFieldsFilter';
 import * as stylex from '@stylexjs/stylex';
+import { ADDRESS_COLUMN, APPLICANT_COLUMN } from '../db/schema';
 
 const styles = stylex.create({
   form: {
@@ -37,7 +38,7 @@ function SearchForm() {
   return (
     <form onSubmit={handleSubmit} {...stylex.props(styles.form)}>
       <p {...stylex.props(styles.description)}>
-        {"Search food facilities by name (Applicant), street, or lat/long coordinates (e.g. 6004575.869, 2105666.974)"}
+        {`Search facility permits by name (${APPLICANT_COLUMN}), street (${ADDRESS_COLUMN}), or lat/long coordinates (e.g. 6004575.869, 2105666.974)`}
       </p>
       <div {...stylex.props(styles.searchRow)}>
         <div {...stylex.props(styles.inputWrapper)}>
