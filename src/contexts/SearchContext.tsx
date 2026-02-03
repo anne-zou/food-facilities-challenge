@@ -1,23 +1,55 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import type { Database } from 'sql.js';
+import type { FacilityStatus, SearchResultRecord } from '../types';
 import { STATUS_VALUES } from '../db/schema';
 import { buildGeoSearchQuery, buildTextSearchQuery, buildLoadAllQuery } from '../db/queries';
 
-const SearchContext = createContext();
+interface SearchContextValue {
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  results: SearchResultRecord[];
+  isLatLongSearch: boolean;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  selectedStatuses: FacilityStatus[];
+  showStatusDropdown: boolean;
+  setShowStatusDropdown: React.Dispatch<React.SetStateAction<boolean>>;
+  searchByApplicant: boolean;
+  setSearchByApplicant: React.Dispatch<React.SetStateAction<boolean>>;
+  searchByAddress: boolean;
+  setSearchByAddress: React.Dispatch<React.SetStateAction<boolean>>;
+  showFieldsDropdown: boolean;
+  setShowFieldsDropdown: React.Dispatch<React.SetStateAction<boolean>>;
+  itemsPerPage: number;
+  totalPages: number;
+  currentPageResults: SearchResultRecord[];
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleStatusToggle: (status: FacilityStatus) => void;
+  handleSelectAllStatuses: () => void;
+  handleDeselectAllStatuses: () => void;
+}
 
-export function SearchProvider({ children, db: dbProp }) {
-  const [db] = useState(() => dbProp || window.db || null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [isLatLongSearch, setIsLatLongSearch] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatuses, setSelectedStatuses] = useState([...STATUS_VALUES]);
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [searchByApplicant, setSearchByApplicant] = useState(true);
-  const [searchByAddress, setSearchByAddress] = useState(true);
-  const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
+interface SearchProviderProps {
+  children: React.ReactNode;
+  db?: Database | null;
+}
+
+const SearchContext = createContext<SearchContextValue | undefined>(undefined);
+
+export function SearchProvider({ children, db: dbProp }: SearchProviderProps) {
+  const [db] = useState<Database | null>(() => dbProp || window.db || null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [results, setResults] = useState<SearchResultRecord[]>([]);
+  const [isLatLongSearch, setIsLatLongSearch] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [selectedStatuses, setSelectedStatuses] = useState<FacilityStatus[]>([...STATUS_VALUES]);
+  const [showStatusDropdown, setShowStatusDropdown] = useState<boolean>(false);
+  const [searchByApplicant, setSearchByApplicant] = useState<boolean>(true);
+  const [searchByAddress, setSearchByAddress] = useState<boolean>(true);
+  const [showFieldsDropdown, setShowFieldsDropdown] = useState<boolean>(false);
   const itemsPerPage = 25;
 
-  // Refresh table on component mount and when user selects/deselects 
+  // Refresh table on component mount and when user selects/deselects
   // a search field or status filter
   useEffect(() => {
     if (!db) {
@@ -31,7 +63,7 @@ export function SearchProvider({ children, db: dbProp }) {
   }, [db, selectedStatuses, searchByApplicant, searchByAddress]);
 
   // Handler function for search form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (!searchQuery.trim()) {
       console.log('Submitted empty search input, loading all rows again');
@@ -42,7 +74,7 @@ export function SearchProvider({ children, db: dbProp }) {
   };
 
   // Handler functions for status filter toggles
-  const handleStatusToggle = (status) => {
+  const handleStatusToggle = (status: FacilityStatus): void => {
     setSelectedStatuses(prev => {
       if (prev.includes(status)) {
         return prev.filter(s => s !== status);
@@ -51,15 +83,15 @@ export function SearchProvider({ children, db: dbProp }) {
       }
     });
   };
-  const handleSelectAllStatuses = () => {
+  const handleSelectAllStatuses = (): void => {
     setSelectedStatuses([...STATUS_VALUES]);
   };
-  const handleDeselectAllStatuses = () => {
+  const handleDeselectAllStatuses = (): void => {
     setSelectedStatuses([]);
   };
 
   // Helper function for loading all rows without any search query
-  const loadAllRows = () => {
+  const loadAllRows = (): void => {
     if (!db) {
       console.log('Database not ready');
       return;
@@ -69,9 +101,9 @@ export function SearchProvider({ children, db: dbProp }) {
     if (bindings.length > 0) {
       stmt.bind(bindings);
     }
-    const allResults = [];
+    const allResults: SearchResultRecord[] = [];
     while (stmt.step()) {
-      allResults.push(stmt.getAsObject());
+      allResults.push(stmt.getAsObject() as any);
     }
     stmt.free();
     setResults(allResults);
@@ -81,7 +113,7 @@ export function SearchProvider({ children, db: dbProp }) {
   };
 
   // Helper function for performing search
-  const performSearch = () => {
+  const performSearch = (): void => {
     if (!db) {
       console.log('Database not ready');
       return;
@@ -95,7 +127,7 @@ export function SearchProvider({ children, db: dbProp }) {
   };
 
   // Helper to search by text fields
-  const searchByText = () => {
+  const searchByText = (): void => {
     const queryResult = buildTextSearchQuery(searchQuery, searchByApplicant, searchByAddress, selectedStatuses);
 
     if (!queryResult) {
@@ -107,12 +139,12 @@ export function SearchProvider({ children, db: dbProp }) {
     }
 
     const { sql, bindings } = queryResult;
-    const stmt = db.prepare(sql);
+    const stmt = db!.prepare(sql);
     stmt.bind(bindings);
 
-    const searchResults = [];
+    const searchResults: SearchResultRecord[] = [];
     while (stmt.step()) {
-      searchResults.push(stmt.getAsObject());
+      searchResults.push(stmt.getAsObject() as any);
     }
     stmt.free();
 
@@ -123,19 +155,19 @@ export function SearchProvider({ children, db: dbProp }) {
   };
 
   // Helper to search by latitude and longitude
-  const searchByCoordinates = (coordinates) => {
+  const searchByCoordinates = (coordinates: RegExpMatchArray): void => {
     const searchLat = parseFloat(coordinates[1]);
     const searchLon = parseFloat(coordinates[2]);
 
     console.log(`Searching for nearest locations to: ${searchLat}, ${searchLon}`);
 
     const { sql, bindings } = buildGeoSearchQuery(searchLat, searchLon, selectedStatuses);
-    const stmt = db.prepare(sql);
+    const stmt = db!.prepare(sql);
     stmt.bind(bindings);
 
-    const searchResults = [];
+    const searchResults: SearchResultRecord[] = [];
     while (stmt.step()) {
-      searchResults.push(stmt.getAsObject());
+      searchResults.push(stmt.getAsObject() as any);
     }
     stmt.free();
 
@@ -146,7 +178,7 @@ export function SearchProvider({ children, db: dbProp }) {
   };
 
   // Helper to check if input matches lat,long pattern
-  const parseCoordinates = (query) => {
+  const parseCoordinates = (query: string): RegExpMatchArray | null => {
     const coordPattern = /^\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*$/;
     const coordMatch = query.match(coordPattern);
     return coordMatch; // returns null if input does not match lat,long pattern
@@ -158,7 +190,7 @@ export function SearchProvider({ children, db: dbProp }) {
   const endIndex = startIndex + itemsPerPage;
   const currentPageResults = isLatLongSearch ? results : results.slice(startIndex, endIndex);
 
-  const value = {
+  const value: SearchContextValue = {
     searchQuery,
     setSearchQuery,
     results,
@@ -190,7 +222,7 @@ export function SearchProvider({ children, db: dbProp }) {
   );
 }
 
-export function useSearch() {
+export function useSearch(): SearchContextValue {
   const context = useContext(SearchContext);
   if (!context) {
     throw new Error('useSearch must be used within a SearchProvider');

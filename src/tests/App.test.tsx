@@ -8,14 +8,26 @@
  * - Cleaning up the database after tests
  */
 
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { Database } from 'sql.js';
+import type { FacilityStatus } from '../types';
 import App from '../App';
 import { schema } from '../db/schema';
 import initSqlJs from 'sql.js';
 
+interface TestFacility {
+  locationid: number;
+  Applicant: string;
+  Address: string;
+  Status: FacilityStatus;
+  Latitude: number;
+  Longitude: number;
+  FoodItems: string;
+}
+
 describe('Food Facilities Search App - E2E Tests', () => {
-  let db;
+  let db: Database | null;
 
   beforeEach(async () => {
     // Initialize SQLite database using sql.js (same as production)
@@ -23,10 +35,10 @@ describe('Food Facilities Search App - E2E Tests', () => {
     db = new SQL.Database();
 
     // Add custom trig functions (same as in production init.js)
-    db.create_function('radians', (degrees) => degrees * Math.PI / 180);
-    db.create_function('sin', (radians) => Math.sin(radians));
-    db.create_function('cos', (radians) => Math.cos(radians));
-    db.create_function('acos', (value) => Math.acos(value));
+    db.create_function('radians', (degrees: number) => degrees * Math.PI / 180);
+    db.create_function('sin', (radians: number) => Math.sin(radians));
+    db.create_function('cos', (radians: number) => Math.cos(radians));
+    db.create_function('acos', (value: number) => Math.acos(value));
 
     window.db = db;
 
@@ -37,7 +49,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
     db.run(`CREATE TABLE food_facilities (${columns})`);
 
     // Create test data
-    const testData = [
+    const testData: TestFacility[] = [
       {
         locationid: 1,
         Applicant: 'Tacos El Primo',
@@ -80,7 +92,7 @@ describe('Food Facilities Search App - E2E Tests', () => {
     testData.forEach((row) => {
       const cols = Object.keys(row).map(k => `"${k}"`).join(', ');
       const placeholders = Object.keys(row).map(() => '?').join(', ');
-      const stmt = db.prepare(`INSERT INTO food_facilities (${cols}) VALUES (${placeholders})`);
+      const stmt = db!.prepare(`INSERT INTO food_facilities (${cols}) VALUES (${placeholders})`);
       stmt.bind(Object.values(row));
       stmt.step();
       stmt.free();

@@ -1,21 +1,21 @@
 export default {
   rootDir: '../..',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/src/tests/setupTests.js'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setupTests.ts'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '@stylexjs/stylex': '<rootDir>/src/tests/mocks/stylex.js',
+    '@stylexjs/stylex': '<rootDir>/src/tests/mocks/stylex.ts',
   },
   transform: {
-    '^.+\\.(js|jsx)$': ['babel-jest', { configFile: './src/tests/babel.config.cjs' }],
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: './src/tests/babel.config.cjs' }],
   },
   testMatch: [
-    '<rootDir>/src/tests/**/__tests__/**/*.{js,jsx}',
-    '<rootDir>/src/tests/**/*.{spec,test}.{js,jsx}',
+    '<rootDir>/src/tests/**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/src/tests/**/*.{spec,test}.{js,jsx,ts,tsx}',
   ],
   collectCoverageFrom: [
-    'src/**/*.{js,jsx}',
-    '!src/main.jsx',
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!src/main.tsx',
     '!src/tests/**',
   ],
 };

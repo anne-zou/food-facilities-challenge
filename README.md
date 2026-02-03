@@ -42,7 +42,7 @@ There is **no backend service** and **no external database**. Given the size and
 
 ### Tech Stack
 
-- **Frontend:** React 19 + Vite
+- **Frontend:** React 19 + Vite + Typescript
 - **Database:** SQL.js (SQLite in the browser)
 - **State Management:** React Context API
 - **Styling:** Bootstrap + StyleX

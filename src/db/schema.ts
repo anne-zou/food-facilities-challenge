@@ -1,3 +1,5 @@
+import type { SchemaDefinition } from '../types';
+
 // Possible Status values in the dataset
 export const STATUS_VALUES = [
   'APPROVED',
@@ -5,7 +7,7 @@ export const STATUS_VALUES = [
   'ISSUED',
   'REQUESTED',
   'SUSPEND'
-];
+] as const;
 
 // Column name constants for commonly used fields
 export const APPLICANT_COLUMN = 'Applicant';
@@ -16,7 +18,7 @@ export const LONGITUDE_COLUMN = 'Longitude';
 
 // Schema definition for food_facilities table
 // Maps CSV column names to their SQLite data types
-export const schema = {
+export const schema: SchemaDefinition = {
   'locationid': 'INTEGER PRIMARY KEY',
   'Applicant': 'TEXT',
   'FacilityType': 'TEXT',

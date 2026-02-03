@@ -76,7 +76,7 @@ function ResultsTable() {
                     key={column}
                     data-testid={column === 'Applicant' ? `applicant-${index}` : undefined}
                   >
-                    {result[column]}
+                    {result[column as keyof typeof result]}
                   </td>
                 ))}
               </tr>

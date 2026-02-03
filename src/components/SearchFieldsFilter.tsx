@@ -41,7 +41,7 @@ function SearchFieldsFilter() {
     setShowFieldsDropdown
   } = useSearch();
 
-  const getSelectedCount = () => {
+  const getSelectedCount = (): number => {
     let count = 0;
     if (searchByApplicant) count++;
     if (searchByAddress) count++;

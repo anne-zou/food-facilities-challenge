@@ -1,4 +1,6 @@
 import squel from 'squel';
+import type { Select } from 'squel';
+import type { QueryResult, FacilityStatus } from '../types';
 import {
   STATUS_VALUES,
   APPLICANT_COLUMN,
@@ -13,10 +15,8 @@ export const GEO_SEARCH_MAX_RESULTS = 5;
 
 /**
  * Builds a SQL query to load all rows with optional status filtering
- * @param {Array<string>} selectedStatuses - Array of selected status values
- * @returns {Object} Object containing SQL query and bindings array
  */
-export function buildLoadAllQuery(selectedStatuses) {
+export function buildLoadAllQuery(selectedStatuses: FacilityStatus[]): QueryResult {
   let query = squel.select().from('food_facilities');
   query = applyStatusFilters(selectedStatuses, query);
   const { text, values } = query.toParam();
@@ -26,12 +26,12 @@ export function buildLoadAllQuery(selectedStatuses) {
 /**
  * Builds a SQL query for coordinate-based search using Haversine formula
  * Uses SQL math functions for the calculation
- * @param {number} searchLat - Search latitude
- * @param {number} searchLon - Search longitude
- * @param {Array<string>} selectedStatuses - Array of selected status values
- * @returns {Object} Object containing SQL query and bindings array {sql, bindings}
  */
-export function buildGeoSearchQuery(searchLat, searchLon, selectedStatuses) {
+export function buildGeoSearchQuery(
+  searchLat: number,
+  searchLon: number,
+  selectedStatuses: FacilityStatus[]
+): QueryResult {
   const earthRadiusKm = 6371;
 
   // Haversine formula using SQL math functions
@@ -66,13 +66,13 @@ export function buildGeoSearchQuery(searchLat, searchLon, selectedStatuses) {
 
 /**
  * Builds a SQL query for text-based search
- * @param {string} searchQuery - The search text
- * @param {boolean} searchByApplicant - Whether to search in Applicant field
- * @param {boolean} searchByAddress - Whether to search in Address field
- * @param {Array<string>} selectedStatuses - Array of selected status values
- * @returns {Object} Object containing SQL query and bindings array, or null if no fields selected
  */
-export function buildTextSearchQuery(searchQuery, searchByApplicant, searchByAddress, selectedStatuses) {
+export function buildTextSearchQuery(
+  searchQuery: string,
+  searchByApplicant: boolean,
+  searchByAddress: boolean,
+  selectedStatuses: FacilityStatus[]
+): QueryResult | null {
   if (!searchByApplicant && !searchByAddress) {
     return null; // No text fields selected for search
   }
@@ -96,11 +96,8 @@ export function buildTextSearchQuery(searchQuery, searchByApplicant, searchByAdd
 
 /**
  * Helper function to apply status filters to the SQL query if needed
- * @param {Array<string>} selectedStatuses - Array of selected status values
- * @param {Object} query - Squel query object to modify
- * @returns {Object} Modified squel query object
  */
-function applyStatusFilters(selectedStatuses, query) {
+function applyStatusFilters(selectedStatuses: FacilityStatus[], query: Select): Select {
   // Apply status filters only if some but not all statuses are selected
   if (selectedStatuses.length > 0 && selectedStatuses.length < STATUS_VALUES.length) {
     query = query.where(`"${STATUS_COLUMN}" IN ?`, selectedStatuses);

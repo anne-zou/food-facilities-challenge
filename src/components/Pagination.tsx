@@ -21,8 +21,8 @@ function Pagination() {
 
   // Calculate which page numbers to display with smart ellipsis
   // Shows: [1] ... [currentPage-1] [currentPage] [currentPage+1] ... [lastPage]
-  const getPageNumbers = () => {
-    const pageNumbers = [];
+  const getPageNumbers = (): (number | string)[] => {
+    const pageNumbers: (number | string)[] = [];
     const maxPagesToShow = 7;
 
     // If total pages fit within max, show all page numbers
@@ -84,7 +84,7 @@ function Pagination() {
         ) : (
           <button
             key={pageNum}
-            onClick={() => setCurrentPage(pageNum)}
+            onClick={() => setCurrentPage(pageNum as number)}
             disabled={pageNum === currentPage}
             className={pageNum === currentPage ? 'btn btn-sm btn-secondary page-number-btn' : 'btn btn-sm btn-outline-secondary page-number-btn'}
           >
